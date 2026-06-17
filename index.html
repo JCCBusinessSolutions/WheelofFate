@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheel of Fate — Insurance Reality Check</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ══════════════════════════════════════
+     NIGHT MODE (default) — #001A47 base
+  ══════════════════════════════════════ */
+  :root {
+    --bg:       #001A47;
+    --surface:  #001f5c;
+    --surface2: #002878;
+    --border:   #1a4db0;
+    --gold:     #f5c842;
+    --gold2:    #c49a1a;
+    --red:      #f87171;
+    --green:    #34d399;
+    --blue:     #60a5fa;
+    --text:     #eef2ff;
+    --text2:    #c5d0f0;
+    --muted:    #7a9acc;
+    --glow:     rgba(245,200,66,0.08);
+    --pitch-bg: rgba(245,200,66,0.07);
+    --pitch-bd: rgba(245,200,66,0.28);
+    --pitch-tx: #d4b84a;
+    --facts-bg: rgba(96,165,250,0.07);
+    --facts-bd: rgba(96,165,250,0.22);
+    --facts-tx: #a8c4f0;
+    --row-alt:  rgba(255,255,255,0.04);
+    --row-bd:   rgba(26,77,176,0.5);
+    --th-bg:    #001f5c;
+  }
+
+  /* ══════════════════════════════════════
+     DARK MODE BOX OVERRIDES
+     White fading on midnight blue base
+  ══════════════════════════════════════ */
+
+  /* Stat boxes — white fade on dark */
+  .stat-box {
+    background: linear-gradient(145deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 12px; transition: background 0.3s, border 0.3s;
+  }
+
+  /* Odds boxes */
+  .obox {
+    background: linear-gradient(145deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 14px; text-align: center; transition: background 0.3s;
+  }
+
+  /* Odds panel */
+  .odds-panel {
+    background: linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 4px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 24px 28px; transition: background 0.3s, border 0.3s;
+  }
+
+  /* Result card */
+  #result-card {
+    background: linear-gradient(160deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(255,255,255,0.13);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+    border-radius: 14px; padding: 28px; display: none; transition: background 0.3s, border 0.3s;
+  }
+
+  /* Table section wrapper */
+  .table-section {
+    background: linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    border-radius: 14px; padding: 20px 20px 24px; transition: background 0.3s;
+    overflow: hidden;
+  }
+  .table-scroll {
+    width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  /* Facts + pitch boxes */
+  .facts-box {
+    background: linear-gradient(145deg, rgba(96,165,250,0.10), rgba(96,165,250,0.04));
+    border: 1px solid rgba(96,165,250,0.22);
+    border-radius: 8px; padding: 13px 15px; margin-bottom: 14px;
+    font-size: 12px; color: var(--facts-tx); line-height: 1.7; transition: background 0.3s;
+  }
+  .insurance-pitch {
+    background: linear-gradient(145deg, rgba(245,200,66,0.10), rgba(245,200,66,0.03));
+    border: 1px solid rgba(245,200,66,0.28);
+    border-radius: 8px; padding: 14px 16px; font-size: 13px;
+    color: var(--pitch-tx); line-height: 1.65; transition: background 0.3s;
+  }
+
+  /* ── DARK MODE FONT COLORS ── */
+  /* All big numbers → red by default */
+  .svalue        { color: #f87171; }
+  .onum          { color: #f87171; }
+  .onum.red      { color: #f87171; }
+  .onum.gold     { color: #f5c842; }
+  .onum.blue     { color: #60a5fa; }
+
+  /* EXCEPTION: survived / escape → green */
+  .svalue.safe   { color: #34d399; }
+  .onum.green    { color: #34d399; }
+
+  /* Other value types */
+  .svalue.gold   { color: #f5c842; }
+  .svalue.blue   { color: #60a5fa; }
+  .svalue.danger { color: #f87171; }
+
+  .cost-col    { color: #f5c842; }
+  .deaths-col  { color: #f87171; }
+  .survive-col.good { color: #34d399; }
+  .survive-col.mid  { color: #f5c842; }
+  .survive-col.bad  { color: #f87171; }
+
+  /* ══════════════════════════════════════
+     LIGHT MODE — white + pastel boxes
+  ══════════════════════════════════════ */
+  html.light {
+    --bg:       #f0f4ff;
+    --surface:  #ffffff;
+    --surface2: #e8eeff;
+    --border:   #c5d0f0;
+    --gold:     #b07800;
+    --gold2:    #8a5e00;
+    --red:      #dc2626;
+    --green:    #16a34a;
+    --blue:     #1d4ed8;
+    --text:     #0f172a;
+    --text2:    #1e3a6e;
+    --muted:    #4a5a8a;
+    --glow:     rgba(180,150,0,0.05);
+    --pitch-bg: rgba(180,140,0,0.07);
+    --pitch-bd: rgba(180,140,0,0.30);
+    --pitch-tx: #7a5500;
+    --facts-bg: rgba(29,78,216,0.06);
+    --facts-bd: rgba(29,78,216,0.20);
+    --facts-tx: #1e3a8a;
+    --row-alt:  rgba(0,0,0,0.02);
+    --row-bd:   #dde5ff;
+    --th-bg:    #e8eeff;
+  }
+
+  html { transition: background-color 0.3s; }
+  html.light { background-color: #f0f4ff !important; }
+
+  body {
+    background-color: transparent;
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 16px 56px;
+    overflow-x: hidden;
+    transition: color 0.3s;
+    padding-bottom: 60px;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1;
+    background-color: var(--bg);
+    background-image: radial-gradient(ellipse 80% 40% at 50% 0%, var(--glow) 0%, transparent 70%);
+    transition: background-color 0.4s;
+  }
+
+  /* ── MODE TOGGLE BAR ── */
+  .mode-bar {
+    width: 100%; max-width: 1020px;
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 14px 0 0; margin-bottom: 10px;
+  }
+  .toggle-wrap {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 50px; padding: 7px 14px;
+    transition: background 0.3s, border 0.3s, box-shadow 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .toggle-wrap:hover { box-shadow: 0 2px 18px rgba(245,200,66,0.3); border-color: var(--gold); }
+  .tog-icon { font-size: 17px; line-height: 1; }
+  .tog-label { font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; min-width: 72px; }
+  /* Track */
+  .tog-track {
+    width: 44px; height: 24px; border-radius: 12px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    position: relative; transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  /* Thumb */
+  .tog-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--gold);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  html.light .tog-thumb { transform: translateX(20px); }
+  html.light .tog-track  { background: #d0e4ff; border-color: #93b4e8; }
+
+  /* ── HEADER ── */
+  header { text-align: center; margin-bottom: 24px; }
+  .eyebrow { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; font-weight: 700; }
+  h1 { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: clamp(44px,9vw,80px); line-height: 0.92; letter-spacing: 3px; color: var(--text); }
+  h1 span { color: var(--gold); }
+  .subtitle { margin-top: 10px; font-size: 14px; color: var(--muted); max-width: 460px; line-height: 1.65; }
+  .badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 14px; border-radius: 3px; }
+  .badge.red   { background: rgba(220,38,38,0.10);  border: 1px solid rgba(220,38,38,0.40);  color: var(--red); }
+  .badge.gold  { background: rgba(245,200,66,0.10); border: 1px solid rgba(245,200,66,0.40); color: var(--gold); }
+  .badge.green { background: rgba(22,163,74,0.10);  border: 1px solid rgba(22,163,74,0.40);  color: var(--green); }
+
+  /* ── LAYOUT ── */
+  .arena { display: flex; flex-direction: column; align-items: center; gap: 32px; width: 100%; max-width: 1020px; padding-bottom: 20px; }
+
+  /* ── WHEEL ── */
+  .wheel-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .pointer-wrap {
+    position: relative; width: 420px; height: 420px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  @media(max-width:480px){ .pointer-wrap { width: 320px; height: 320px; } }
+  .pointer-wrap::before {
+    content: ''; position: absolute; inset: -20px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,200,66,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .pointer {
+    position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 16px solid transparent; border-right: 16px solid transparent;
+    border-top: 32px solid var(--gold);
+    z-index: 10; filter: drop-shadow(0 0 10px rgba(245,200,66,0.9));
+  }
+  .hub {
+    position: absolute; width: 58px; height: 58px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff8d6, #b8860b);
+    border: 3px solid #ffe87a; box-shadow: 0 0 20px rgba(245,200,66,0.8);
+    z-index: 5; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hub svg { width: 30px; height: 30px; }
+
+  .spin-btn {
+    font-family: Impact, Arial Narrow, Arial, sans-serif;
+    font-size: 24px; letter-spacing: 4px; padding: 14px 58px;
+    background: linear-gradient(135deg, #f5c842, #e0a800);
+    color: #001A47; border: none; border-radius: 3px; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+    box-shadow: 0 4px 28px rgba(245,200,66,0.4); font-weight: 900;
+  }
+  .spin-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 36px rgba(245,200,66,0.55); }
+  .spin-btn:active { transform: translateY(0); }
+  .spin-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  /* ── RESULT CARD ── */
+  #result-card { width: 100%; max-width: 600px; }
+  #result-card.show { display: block; animation: popIn 0.42s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes popIn { from { transform:scale(0.86); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+  .result-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .result-icon { font-size: 46px; line-height: 1; }
+  .rlabel { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .rillness { font-family: Georgia, serif; font-size: 26px; line-height: 1.15; color: var(--text); font-weight: bold; }
+
+  .outcome-banner { border-radius: 6px; padding: 13px 16px; margin-bottom: 16px; font-weight: 700; font-size: 14px; line-height: 1.5; }
+  .outcome-banner.survived { background: rgba(22,163,74,0.10);  border: 1px solid rgba(22,163,74,0.35);  color: var(--green); }
+  .outcome-banner.hit      { background: rgba(220,38,38,0.08);  border: 1px solid rgba(220,38,38,0.35);  color: var(--red); }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+  @media(max-width:480px){ .stats-grid { grid-template-columns: 1fr 1fr; } }
+  .slabel { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .svalue { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: 22px; letter-spacing: 1px; line-height: 1.1; }
+  .ssub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .facts-box strong { color: var(--blue); }
+  .facts-box .src-link { color: var(--gold); text-decoration: none; font-size: 11px; }
+  .facts-box .src-link:hover { text-decoration: underline; }
+  .insurance-pitch strong { color: var(--gold); }
+
+  /* ── DATA TABLE ── */
+  .table-section { width: 100%; max-width: 860px; box-sizing: border-box; }
+  .section-label {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .source-note { font-size: 11px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+  .source-note a { color: var(--gold); text-decoration: none; }
+  .source-note a:hover { text-decoration: underline; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    text-align: left; font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border);
+    background: var(--th-bg); transition: background 0.3s;
+  }
+  tbody tr:hover { background: var(--row-alt); }
+  tbody td { padding: 10px; border-bottom: 1px solid var(--row-bd); vertical-align: middle; color: var(--text); }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; flex-shrink: 0; }
+  .ill-name { font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .cost-col    { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: 14px; color: var(--gold); }
+  .deaths-col  { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: 14px; color: var(--red); }
+  .survive-col { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: 14px; }
+  .survive-col.good { color: var(--green); }
+  .survive-col.mid  { color: var(--gold); }
+  .survive-col.bad  { color: var(--red); }
+  .psa-tag { font-size: 9px; color: var(--muted); font-style: italic; }
+  .psa-tag.verified  { color: var(--green); }
+  .psa-tag.estimated { color: var(--gold); }
+
+  /* ── GLOBAL ODDS PANEL ── */
+  .odds-panel { width: 100%; max-width: 860px; }
+  .odds-title { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--gold); margin-bottom: 16px; }
+  .odds-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  @media(max-width:600px){ .odds-grid { grid-template-columns: 1fr 1fr; } }
+  .onum { font-family: Impact, Arial Narrow, Arial, sans-serif; font-size: 32px; line-height: 1; }
+  .odesc { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+
+  /* ── FOOTER ── */
+  footer { margin-top: 36px; font-size: 11px; color: var(--muted); text-align: center; line-height: 1.8; max-width: 600px; }
+  footer a { color: var(--gold); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ══════════════════════════════════════
+     LIGHT MODE BOX OVERRIDES
+     White fading style + dark red numbers
+  ══════════════════════════════════════ */
+
+  /* Stat boxes — white with soft gradient fade */
+  html.light .stat-box {
+    background: linear-gradient(145deg, #ffffff 0%, #f4f7ff 100%);
+    border: 1px solid #dde6ff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+
+  /* Odds boxes */
+  html.light .obox {
+    background: linear-gradient(145deg, #ffffff 0%, #f0f5ff 100%);
+    border: 1px solid #dde6ff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+
+  /* Odds panel container */
+  html.light .odds-panel {
+    background: linear-gradient(160deg, #ffffff 0%, #eef2ff 100%);
+    border: 1px solid #d0daff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  }
+
+  /* Result card */
+  html.light #result-card {
+    background: linear-gradient(160deg, #ffffff 0%, #f5f8ff 100%);
+    border: 1px solid #d0daff;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.09);
+  }
+
+  /* Table header */
+  html.light thead th {
+    background: linear-gradient(90deg, #eef2ff, #f5f8ff);
+    border-bottom: 2px solid #c5d0f0;
+  }
+
+  /* Table section */
+  html.light .table-section {
+    background: linear-gradient(160deg, #ffffff 0%, #f5f8ff 100%);
+    border: 1px solid #d0daff;
+    border-radius: 12px;
+    padding: 20px 20px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Facts + pitch boxes */
+  html.light .facts-box {
+    background: linear-gradient(145deg, #f0f5ff, #e8eeff);
+    border: 1px solid #c5d0f0;
+  }
+  html.light .insurance-pitch {
+    background: linear-gradient(145deg, #fffbea, #fef3c7);
+    border: 1px solid #d4a800;
+  }
+  html.light .insurance-pitch,
+  html.light .insurance-pitch strong { color: #7a4f00; }
+
+  /* ── LIGHT MODE FONT COLORS ── */
+
+  /* All big stat numbers → dark red by default */
+  html.light .svalue         { color: #b91c1c; }
+  html.light .onum           { color: #b91c1c; }
+  html.light .onum.red       { color: #b91c1c; }
+  html.light .onum.gold      { color: #92400e; }
+  html.light .onum.blue      { color: #1e3a8a; }
+
+  /* EXCEPTION: survived / escape chance → green */
+  html.light .svalue.safe    { color: #15803d; }
+  html.light .onum.green     { color: #15803d; }
+
+  /* Cost column stays amber/dark gold */
+  html.light .cost-col       { color: #92400e; }
+  html.light .deaths-col     { color: #b91c1c; }
+
+  /* Survive column */
+  html.light .survive-col.good { color: #15803d; }
+  html.light .survive-col.mid  { color: #92400e; }
+  html.light .survive-col.bad  { color: #b91c1c; }
+
+  /* PSA tags */
+  html.light .psa-tag.verified  { color: #15803d; }
+  html.light .psa-tag.estimated { color: #92400e; }
+
+  /* Section label */
+  html.light .section-label { color: #374162; border-bottom-color: #c5d0f0; }
+
+  /* Odds title */
+  html.light .odds-title { color: #92400e; }
+
+  /* ill-name */
+  html.light .ill-name { color: #0f172a; }
+
+  /* Outcome banners in light mode */
+  html.light .outcome-banner.survived {
+    background: #dcfce7; border-color: #86efac; color: #15803d;
+  }
+  html.light .outcome-banner.hit {
+    background: #fee2e2; border-color: #fca5a5; color: #b91c1c;
+  }
+
+  /* rillness name */
+  html.light .rillness { color: #0f172a; }
+
+  /* footer */
+  html.light footer { color: #4a5a8a; }
+  html.light footer a { color: #92400e; }
+</style>
+</head>
+<body>
+<script>
+  // Set initial light mode background immediately to prevent flash
+  document.documentElement.style.backgroundColor = '#f0f4ff';
+  document.body && (document.body.style.backgroundColor = '#f0f4ff');
+</script>
+
+<div class="mode-bar">
+  <div class="toggle-wrap" onclick="toggleMode()" title="Toggle dark/light mode">
+    <span class="tog-icon" id="togIcon">☀️</span>
+    <div class="tog-track">
+      <div class="tog-thumb"></div>
+    </div>
+    <span class="tog-label" id="togLabel">Light Mode</span>
+  </div>
+</div>
+
+<header>
+  <h1>WHEEL OF <span>FATE</span></h1>
+  <p class="subtitle">Spin the wheel. Face the reality. Based on PSA 2024 official data — one spin could change everything.</p>
+  <div class="badge-row">
+    <span class="badge red">⚠ 85% Lifetime Risk of 1 Major Illness</span>
+    <span class="badge gold">128,889 Heart Disease Deaths in 2024</span>
+    <span class="badge green">Source: PSA Philippines</span>
+  </div>
+</header>
+
+<div class="arena">
+
+  <!-- WHEEL + SPIN -->
+  <div class="wheel-wrap">
+    <div class="pointer-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel" style="border-radius:50%;display:block;cursor:pointer;box-shadow:0 0 0 5px #c5d0f0,0 0 0 8px #b07800,0 0 30px rgba(180,140,0,0.2);"></canvas></canvas>
+      <div class="hub">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="15" cy="10" r="5" fill="none" stroke="#1a0a00" stroke-width="3.5"/>
+          <circle cx="49" cy="10" r="5" fill="none" stroke="#1a0a00" stroke-width="3.5"/>
+          <path d="M15 15 C15 28 32 25 32 38" stroke="#1a0a00" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <path d="M49 15 C49 28 32 25 32 38" stroke="#1a0a00" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <path d="M32 38 C32 52 46 52 46 42" stroke="#1a0a00" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <circle cx="46" cy="40" r="7" fill="#1a0a00"/>
+          <circle cx="46" cy="40" r="4" fill="#7a5a00"/>
+        </svg>
+      </div>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN THE WHEEL</button>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div id="result-card">
+    <div class="result-header">
+      <div class="result-icon" id="r-icon"></div>
+      <div>
+        <div class="rlabel">You landed on</div>
+        <div class="rillness" id="r-illness"></div>
+      </div>
+    </div>
+    <div class="outcome-banner" id="r-outcome"></div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="slabel">Est. Medical Cost</div>
+        <div class="svalue danger" id="r-cost"></div>
+        <div class="ssub">PHP estimate</div>
+      </div>
+      <div class="stat-box">
+        <div class="slabel">2024 PH Deaths</div>
+        <div class="svalue red" id="r-deaths"></div>
+        <div class="ssub">PSA 2024 data</div>
+      </div>
+      <div class="stat-box">
+        <div class="slabel">% of All Deaths</div>
+        <div class="svalue gold" id="r-pct"></div>
+        <div class="ssub">national share</div>
+      </div>
+      <div class="stat-box">
+        <div class="slabel">5-Yr Survival Rate</div>
+        <div class="svalue" id="r-survival"></div>
+        <div class="ssub">if diagnosed</div>
+      </div>
+      <div class="stat-box">
+        <div class="slabel">Lifetime Risk (PH)</div>
+        <div class="svalue danger" id="r-lrisk"></div>
+        <div class="ssub">probability</div>
+      </div>
+      <div class="stat-box">
+        <div class="slabel">Your Outcome</div>
+        <div class="svalue" id="r-result-stat"></div>
+        <div class="ssub">this spin</div>
+      </div>
+    </div>
+
+    <div class="facts-box" id="r-facts"></div>
+    <div class="insurance-pitch" id="r-pitch"></div>
+  </div>
+
+  <!-- GLOBAL ODDS PANEL -->
+  <div class="odds-panel">
+    <div class="odds-title">📊 THE NUMBERS DON'T LIE — PHILIPPINES 2024</div>
+    <div class="odds-grid">
+      <div class="obox">
+        <div class="onum red">672K+</div>
+        <div class="odesc">Total deaths from top 10 illnesses in 2024 (PSA)</div>
+      </div>
+      <div class="obox">
+        <div class="onum gold">19.2%</div>
+        <div class="odesc">Heart disease alone — nearly 1 in 5 deaths</div>
+      </div>
+      <div class="obox">
+        <div class="onum red">85%</div>
+        <div class="odesc">Estimated lifetime chance of getting at least 1 critical illness</div>
+      </div>
+      <div class="obox">
+        <div class="onum green">15%</div>
+        <div class="odesc">Chance of escaping all top 10 illnesses in a lifetime</div>
+      </div>
+      <div class="obox">
+        <div class="onum blue">₱1M–₱5M</div>
+        <div class="odesc">Average cancer treatment cost — can wipe out savings in months</div>
+      </div>
+      <div class="obox">
+        <div class="onum gold">10–20%</div>
+        <div class="odesc">Filipinos with health insurance coverage (PhilHealth + private)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="table-section">
+    <div class="section-label">Top 10 Illnesses — PSA 2024 Data + Survival Rates</div>
+    <div class="source-note">
+      📌 <strong>Data Sources:</strong>
+      <a href="https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025" target="_blank">PSA 2024 Causes of Death (Official)</a> ·
+      <a href="https://doh.gov.ph" target="_blank">DOH Philippines</a> ·
+      <a href="https://www.who.int/philippines" target="_blank">WHO Philippines</a> ·
+      Death counts for ranks 1–5 are PSA-verified; ranks 6–10 are estimated from PSA trend data.
+    </div>
+    <div class="table-scroll"><table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Illness</th>
+          <th>2024 Deaths (PSA)</th>
+          <th>% of Deaths</th>
+          <th>5-Yr Survival</th>
+          <th>Lifetime Risk</th>
+          <th>Est. Cost (PHP)</th>
+          <th>Data Status</th>
+        </tr>
+      </thead>
+      <tbody id="illness-table"></tbody>
+    </table></div>
+  </div>
+
+</div>
+
+<footer>
+  <p>
+    📎 Official Source: <a href="https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025" target="_blank">Philippine Statistics Authority — 2024 Causes of Death (Provisional, June 2025)</a>
+  </p>
+  <p style="margin-top:6px;">Survival rates sourced from DOH Philippines, WHO, and international oncology/cardiology studies adapted to PH context. Costs are indicative hospital estimates. For illustration purposes only.</p>
+  <p style="margin-top:10px; font-weight:700; letter-spacing:1px;">© Jaymar Castro, CPA | JCC Business Solutions. All rights reserved.</p>
+</footer>
+
+<script>
+const ILLNESSES = [
+  {
+    name: "Heart Disease",
+    shortName: "Heart Disease",
+    icon: "❤️", color: "#e74c3c",
+    costShort: "₱500K–₱2M",
+    deaths: "128,889", pct: "19.2%",
+    survival: "70–85%", survivalClass: "mid",
+    lifetimeRisk: "1 in 3",
+    dataStatus: "verified",
+    facts: "Leading cause of death in PH for 10+ consecutive years. Bypass surgery alone costs ₱500K–₱1.5M. Risk factors: smoking, hypertension, high cholesterol, diabetes.",
+    pitch: "A single cardiac event can drain a family's entire savings. A Sun Life CI plan pays a lump sum upon diagnosis — so you can focus on recovery, not bankruptcy.",
+    source: "https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025"
+  },
+  {
+    name: "Cancer (Neoplasms)",
+    shortName: "Cancer",
+    icon: "🎗️", color: "#e91e63",
+    costShort: "₱1M–₱5M",
+    deaths: "74,182", pct: "11.0%",
+    survival: "30–60%", survivalClass: "bad",
+    lifetimeRisk: "1 in 5",
+    dataStatus: "verified",
+    facts: "2nd leading cause of death. Chemotherapy costs ₱80K–₱200K per cycle. Common PH cancers: breast, lung, colorectal, cervical, liver. Early detection dramatically improves survival.",
+    pitch: "Cancer treatment can last 2–5 years and cost millions. Without financial protection, most families are forced to choose between treatment and daily survival.",
+    source: "https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025"
+  },
+  {
+    name: "Stroke",
+    shortName: "Stroke",
+    icon: "🧠", color: "#8e44ad",
+    costShort: "₱300K–₱1.5M",
+    deaths: "65,866", pct: "9.8%",
+    survival: "60–75%", survivalClass: "mid",
+    lifetimeRisk: "1 in 4",
+    dataStatus: "verified",
+    facts: "3rd leading cause. Stroke survivors often need 6–24 months of rehabilitation costing ₱30K–₱80K/month. Hypertension is the #1 risk factor in Filipinos.",
+    pitch: "Stroke doesn't just threaten life — it threatens your ability to earn. Long-term rehab costs can exceed ₱1M. A CI plan ensures income protection during recovery.",
+    source: "https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025"
+  },
+  {
+    name: "Pneumonia",
+    shortName: "Pneumonia",
+    icon: "🌡️", color: "#2196f3",
+    costShort: "₱80K–₱400K",
+    deaths: "44,986", pct: "6.7%",
+    survival: "75–90%", survivalClass: "good",
+    lifetimeRisk: "1 in 6",
+    dataStatus: "verified",
+    facts: "4th leading cause. ICU admission for severe pneumonia costs ₱15K–₱30K/day. High-risk groups: elderly, diabetics, immunocompromised. Often underestimated as 'just a cough.'",
+    pitch: "One severe pneumonia hospitalization can cost ₱400K. Most families exhaust emergency funds in days without insurance coverage.",
+    source: "https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025"
+  },
+  {
+    name: "Diabetes Mellitus",
+    shortName: "Diabetes",
+    icon: "💉", color: "#ff9800",
+    costShort: "₱100K–₱800K/yr",
+    deaths: "42,153", pct: "6.3%",
+    survival: "65–80%", survivalClass: "mid",
+    lifetimeRisk: "1 in 5",
+    dataStatus: "verified",
+    facts: "5th leading cause. 1 in 14 Filipino adults has diabetes (IDF 2023). Annual medication + monitoring: ₱60K–₱150K. Complications include kidney failure, blindness, amputation.",
+    pitch: "Diabetes is a lifelong financial drain. Complications like dialysis (₱15K/session, 3x/week) can bankrupt a family within a year without proper coverage.",
+    source: "https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025"
+  },
+  {
+    name: "Hypertension",
+    shortName: "Hypertension",
+    icon: "🩺", color: "#f44336",
+    costShort: "₱80K–₱500K/yr",
+    deaths: "~35,000", pct: "~5.2%",
+    survival: "70–85%", survivalClass: "mid",
+    lifetimeRisk: "1 in 3",
+    dataStatus: "estimated",
+    facts: "Called the 'silent killer' — often no symptoms until a crisis. ~28% of Filipino adults are hypertensive (DOH). Leads to stroke, heart attack, and kidney failure when uncontrolled.",
+    pitch: "Hypertension management is a lifetime expense. Without insurance, complications like kidney failure requiring dialysis can cost over ₱2M annually.",
+    source: "https://doh.gov.ph"
+  },
+  {
+    name: "Chronic Resp. Disease",
+    shortName: "COPD / Lung",
+    icon: "🫁", color: "#009688",
+    costShort: "₱60K–₱300K/yr",
+    deaths: "~28,000", pct: "~4.2%",
+    survival: "50–70%", survivalClass: "mid",
+    lifetimeRisk: "1 in 7",
+    dataStatus: "estimated",
+    facts: "COPD primarily caused by smoking and air pollution. No cure — only management. Requires lifetime bronchodilator medication (₱3K–₱8K/month) and periodic hospitalization.",
+    pitch: "Chronic lung disease silently erodes quality of life and income. A comprehensive health plan covers maintenance medications and hospitalization when flare-ups occur.",
+    source: "https://doh.gov.ph"
+  },
+  {
+    name: "Kidney Disease",
+    shortName: "Kidney Disease",
+    icon: "🫘", color: "#3f51b5",
+    costShort: "₱600K–₱2.5M",
+    deaths: "~22,000", pct: "~3.3%",
+    survival: "40–60%", survivalClass: "bad",
+    lifetimeRisk: "1 in 8",
+    dataStatus: "estimated",
+    facts: "Dialysis needed 3x/week at ~₱4K–₱6K per session = ₱600K–₱900K annually. Kidney transplant costs ₱1.5M–₱3M. Diabetes and hypertension are top risk factors.",
+    pitch: "Kidney failure is one of the most financially devastating diagnoses. Most families cannot sustain dialysis costs beyond 1 year without insurance. A CI plan is a financial lifeline.",
+    source: "https://doh.gov.ph"
+  },
+  {
+    name: "Tuberculosis (TB)",
+    shortName: "Tuberculosis",
+    icon: "💨", color: "#795548",
+    costShort: "₱50K–₱300K",
+    deaths: "~18,000", pct: "~2.7%",
+    survival: "85–95%", survivalClass: "good",
+    lifetimeRisk: "1 in 10",
+    dataStatus: "estimated",
+    facts: "Philippines is among the top 8 high-burden TB countries (WHO 2024). Drug-resistant TB (MDR-TB) treatment costs ₱200K–₱500K and takes 18–24 months. Spreads via airborne droplets.",
+    pitch: "TB disrupts income for months. MDR-TB can take 2 years to treat. A health plan ensures you don't have to choose between treatment and feeding your family.",
+    source: "https://www.who.int/philippines"
+  },
+  {
+    name: "Other Heart Conditions",
+    shortName: "Heart Failure",
+    icon: "💓", color: "#607d8b",
+    costShort: "₱200K–₱1.5M",
+    deaths: "~15,000", pct: "~2.2%",
+    survival: "60–80%", survivalClass: "mid",
+    lifetimeRisk: "1 in 6",
+    dataStatus: "estimated",
+    facts: "Includes heart failure, arrhythmia, and congenital heart defects. Heart failure hospitalization costs ₱80K–₱200K per episode. Often requires lifelong medication and monitoring.",
+    pitch: "Heart failure is not a one-time event — it's a chronic, recurring condition. Without financial protection, each hospitalization further depletes family savings.",
+    source: "https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025"
+  }
+];
+
+// ── WHEEL SLICES: 10 illnesses + 2 SURVIVED (green) = 12 total ──
+// Survived slices placed at index 2 and 7 (evenly spread, ~20% of wheel)
+const SURVIVED_SLICE = {
+  name: "SURVIVED!",
+  shortName: "SURVIVED!",
+  icon: "🛡️",
+  color: "#16a34a",
+  isSurvived: true
+};
+
+// Build 12-slice array: insert SURVIVED at positions 2 and 7
+const WHEEL_SLICES = [];
+const illnessCopy = [...ILLNESSES];
+// Insert survived slices evenly: after index 1 and after index 6 (of original 10)
+illnessCopy.splice(2, 0, SURVIVED_SLICE);      // position 2
+illnessCopy.splice(8, 0, {...SURVIVED_SLICE});  // position 8 (after shift)
+WHEEL_SLICES.push(...illnessCopy);
+
+const TOTAL = WHEEL_SLICES.length; // 12
+const ARC   = (2 * Math.PI) / TOTAL;
+
+// ── CANVAS WHEEL (High-DPI) ──
+const canvas = document.getElementById('wheel');
+const ctx    = canvas.getContext('2d');
+let spinning = false;
+
+// Display size (CSS pixels)
+const DISPLAY = 420;
+
+// Scale for sharpness — use devicePixelRatio capped at 3
+const DPR = Math.min(window.devicePixelRatio || 2, 3);
+
+// Set canvas internal resolution
+canvas.width  = DISPLAY * DPR;
+canvas.height = DISPLAY * DPR;
+canvas.style.width  = DISPLAY + 'px';
+canvas.style.height = DISPLAY + 'px';
+
+// Scale all drawing by DPR
+ctx.scale(DPR, DPR);
+
+// Update pointer-wrap size
+document.querySelector('.pointer-wrap').style.width  = DISPLAY + 'px';
+document.querySelector('.pointer-wrap').style.height = DISPLAY + 'px';
+
+// Randomize starting angle so wheel doesn't always show Heart Disease at top
+let currentAngle = Math.random() * 2 * Math.PI;
+
+function lighten(hex, amt) {
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  r = Math.min(255,r+amt); g = Math.min(255,g+amt); b = Math.min(255,b+amt);
+  return `rgb(${r},${g},${b})`;
+}
+
+function drawWheel(rotation) {
+  const W = DISPLAY, H = DISPLAY;
+  const cx = W/2, cy = H/2, r = cx - 8;
+  ctx.clearRect(0, 0, W, H);
+
+  for (let i = 0; i < TOTAL; i++) {
+    const start  = rotation + i * ARC;
+    const end    = start + ARC;
+    const slice  = WHEEL_SLICES[i];
+    const mid    = start + ARC / 2;
+
+    // ── SLICE FILL ──
+    if (slice.isSurvived) {
+      // Bright green gradient for survived
+      const gx1 = cx + r*0.15*Math.cos(mid), gy1 = cy + r*0.15*Math.sin(mid);
+      const gx2 = cx + r*Math.cos(mid),       gy2 = cy + r*Math.sin(mid);
+      const grad = ctx.createLinearGradient(gx1,gy1,gx2,gy2);
+      grad.addColorStop(0, '#4ade80');
+      grad.addColorStop(1, '#15803d');
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+      // Bright white border for survived
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    } else {
+      // Illness gradient
+      const gx1 = cx + r*0.15*Math.cos(mid), gy1 = cy + r*0.15*Math.sin(mid);
+      const gx2 = cx + r*Math.cos(mid),       gy2 = cy + r*Math.sin(mid);
+      const grad = ctx.createLinearGradient(gx1,gy1,gx2,gy2);
+      grad.addColorStop(0, lighten(slice.color, 60));
+      grad.addColorStop(1, slice.color);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // ── TEXT ──
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(mid);
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    const textR = r * 0.56;
+
+    if (slice.isSurvived) {
+      // Large shield emoji
+      ctx.font        = '22px Arial';
+      ctx.shadowColor = 'rgba(0,0,0,0.9)';
+      ctx.shadowBlur  = 6;
+      ctx.fillStyle   = '#ffffff';
+      ctx.fillText('🛡️', textR + r * 0.28, 0);
+
+      // "SURVIVED" bold text
+      ctx.font        = 'bold 13px Arial';
+      ctx.shadowColor = 'rgba(0,0,0,1)';
+      ctx.shadowBlur  = 10;
+      ctx.fillStyle   = '#ffffff';
+      ctx.fillText('SURVIVED!', textR, -8);
+      ctx.font        = 'bold 11px Arial';
+      ctx.fillStyle   = '#d1fae5';
+      ctx.fillText('20% Chance', textR, +8);
+    } else {
+      // Icon
+      ctx.font        = '18px Arial';
+      ctx.shadowColor = 'rgba(0,0,0,0.95)';
+      ctx.shadowBlur  = 6;
+      ctx.fillStyle   = '#ffffff';
+      ctx.fillText(slice.icon, textR + r * 0.30, 0);
+
+      // Name — split into 2 lines
+      const short = slice.shortName || slice.name;
+      const words = short.split(' ');
+      let line1 = '', line2 = '';
+      if (words.length <= 2) { line1 = words[0]; line2 = words[1] || ''; }
+      else { const m = Math.ceil(words.length/2); line1 = words.slice(0,m).join(' '); line2 = words.slice(m).join(' '); }
+
+      ctx.font        = 'bold 13px Arial';
+      ctx.shadowColor = 'rgba(0,0,0,1)';
+      ctx.shadowBlur  = 12;
+      ctx.fillStyle   = '#ffffff';
+      if (line2) {
+        ctx.fillText(line1, textR, -8);
+        ctx.fillText(line2, textR, +8);
+      } else {
+        ctx.fillText(line1, textR, 0);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // Gold outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 2*Math.PI);
+  ctx.strokeStyle = 'rgba(245,200,66,0.9)';
+  ctx.lineWidth   = 4;
+  ctx.stroke();
+
+  // Inner hub ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, 34, 0, 2*Math.PI);
+  ctx.strokeStyle = 'rgba(245,200,66,0.45)';
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+}
+
+drawWheel(currentAngle);
+
+// ── BUILD TABLE ──
+const tbody = document.getElementById('illness-table');
+ILLNESSES.forEach((ill, i) => {
+  const tr = document.createElement('tr');
+  const isVerified = ill.dataStatus === 'verified';
+  tr.innerHTML = `
+    <td style="color:var(--muted);font-weight:700;">${i+1}</td>
+    <td><div class="ill-name"><span class="dot" style="background:${ill.color}"></span>${ill.icon} ${ill.name}</div></td>
+    <td class="deaths-col">${ill.deaths}</td>
+    <td style="color:var(--gold);font-weight:700;">${ill.pct}</td>
+    <td class="survive-col ${ill.survivalClass}">${ill.survival}</td>
+    <td style="color:var(--text);">${ill.lifetimeRisk}</td>
+    <td class="cost-col">${ill.costShort}</td>
+    <td><span class="psa-tag ${isVerified ? 'verified' : 'estimated'}">${isVerified ? '✅ PSA Verified' : '📊 PSA Trend Est.'}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ── SPIN ──
+function spinWheel() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('result-card').classList.remove('show');
+
+  const extraTurns = 6 + Math.floor(Math.random() * 5);
+  const landAngle  = Math.random() * 2 * Math.PI;
+  const totalRot   = extraTurns * 2 * Math.PI + landAngle;
+  const duration   = 5200;
+  const t0         = performance.now();
+  const startAngle = currentAngle;
+
+  function ease(t) { return 1 - Math.pow(1-t, 4); }
+
+  (function animate(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    currentAngle = startAngle + totalRot * ease(p);
+    drawWheel(currentAngle);
+    if (p < 1) requestAnimationFrame(animate);
+    else {
+      spinning = false;
+      document.getElementById('spinBtn').disabled = false;
+      showResult(currentAngle);
+    }
+  })(performance.now());
+}
+
+function showResult(rotation) {
+  const norm  = (((-rotation - Math.PI/2) % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+  const idx   = Math.floor(norm / ARC) % TOTAL;
+  const slice = WHEEL_SLICES[idx];
+
+  const outcome = document.getElementById('r-outcome');
+  const rStat   = document.getElementById('r-result-stat');
+  const card    = document.getElementById('result-card');
+
+  if (slice.isSurvived) {
+    // ── SURVIVED slice ──
+    document.getElementById('r-icon').textContent    = '🛡️';
+    document.getElementById('r-illness').textContent = 'You Survived!';
+    document.getElementById('r-cost').textContent    = '—';
+    document.getElementById('r-deaths').textContent  = '—';
+    document.getElementById('r-pct').textContent     = '—';
+    const survEl = document.getElementById('r-survival');
+    survEl.textContent = '100%'; survEl.className = 'svalue safe';
+    document.getElementById('r-lrisk').textContent   = '20%';
+
+    outcome.className = 'outcome-banner survived';
+    outcome.innerHTML = '🎉 LUCKY! You landed on the SURVIVED slice — only a 20% chance of this happening. Most Filipinos aren\'t this lucky.';
+    rStat.textContent = 'SURVIVED'; rStat.className = 'svalue safe';
+
+    document.getElementById('r-facts').innerHTML =
+      `<strong>📊 What does this mean?</strong><br>` +
+      `Only <strong>2 out of 12 slices</strong> on this wheel are green — representing the <strong>20% chance</strong> of escaping all critical illnesses in a lifetime. ` +
+      `The other <strong>10 slices (83%)</strong> represent major illnesses every Filipino faces.<br><br>` +
+      `<strong>Even if you survive today — the wheel spins again tomorrow.</strong> Are you financially protected?<br><br>` +
+      `<a href="https://psa.gov.ph/content/2024-causes-death-philippines-provisional-30-june-2025" target="_blank" class="src-link">📎 PSA 2024 Data Source →</a>`;
+
+    document.getElementById('r-pitch').innerHTML =
+      `<strong>💡 The real question:</strong> You got lucky this time. But with an 85% lifetime risk of critical illness, the odds are not in your favor forever. ` +
+      `A Sun Life CI plan ensures that whether you land on green or red — your finances are always protected.`;
+  } else {
+    // ── ILLNESS slice ──
+    const ill = slice;
+    document.getElementById('r-icon').textContent    = ill.icon;
+    document.getElementById('r-illness').textContent = ill.name;
+    document.getElementById('r-cost').textContent    = ill.costShort;
+    document.getElementById('r-deaths').textContent  = ill.deaths;
+    document.getElementById('r-pct').textContent     = ill.pct;
+    const survEl = document.getElementById('r-survival');
+    survEl.textContent = ill.survival; survEl.className = `svalue ${ill.survivalClass}`;
+    document.getElementById('r-lrisk').textContent   = ill.lifetimeRisk;
+
+    outcome.className = 'outcome-banner hit';
+    outcome.innerHTML = `🏥 AFFECTED — You got <strong>${ill.name}</strong>. Est. bill: <strong>${ill.costShort}</strong>. How much is your Health Insurance actively in place?`;
+    rStat.textContent = 'AFFECTED'; rStat.className = 'svalue danger';
+
+    document.getElementById('r-facts').innerHTML =
+      `<strong>📊 Key Facts about ${ill.name}:</strong><br>` +
+      `${ill.facts}<br><br>` +
+      `<a href="${ill.source}" target="_blank" class="src-link">📎 View Data Source →</a>`;
+
+    document.getElementById('r-pitch').innerHTML =
+      `<strong>💡 Why this matters for your financial plan:</strong><br>${ill.pitch}`;
+  }
+
+  card.classList.add('show');
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+// ── DAY / NIGHT TOGGLE ──
+function toggleMode() {
+  const html = document.documentElement;
+  const isLight = html.classList.toggle('light');
+
+  if (isLight) {
+    html.style.backgroundColor = '#f0f4ff';
+    document.body.style.backgroundColor = '#f0f4ff';
+  } else {
+    html.style.backgroundColor = '#001A47';
+    document.body.style.backgroundColor = '#001A47';
+  }
+
+  document.getElementById('togIcon').textContent  = isLight ? '☀️' : '🌙';
+  document.getElementById('togLabel').textContent = isLight ? 'Light Mode' : 'Dark Mode';
+
+  const shadow = isLight
+    ? '0 0 0 5px #c5d0f0, 0 0 0 8px #b07800, 0 0 30px rgba(180,140,0,0.2)'
+    : '0 0 0 5px #002060, 0 0 0 8px #c49a1a, 0 0 50px rgba(245,200,66,0.3), 0 0 100px rgba(245,200,66,0.1)';
+  document.getElementById('wheel').style.boxShadow = shadow;
+}
+
+// ── RESPONSIVE ──
+(function() {
+  const maxDisplay = Math.min(window.innerWidth - 32, 420);
+  if (maxDisplay < 420) {
+    canvas.style.width  = maxDisplay + 'px';
+    canvas.style.height = maxDisplay + 'px';
+    document.querySelector('.pointer-wrap').style.width  = maxDisplay + 'px';
+    document.querySelector('.pointer-wrap').style.height = maxDisplay + 'px';
+  }
+})();
+</script>
+</body>
+</html>
